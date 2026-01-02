@@ -1,0 +1,8 @@
+services:
+  signalling-server:
+    build: ./signalling-server
+
+  local-client:
+    build: ./local-client
+    depends_on:
+      - signalling-server
