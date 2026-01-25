@@ -8,7 +8,7 @@ import (
 func PingHandler(w http.ResponseWriter, r *http.Request) error {
 	env := envelope{
 		"status": "available",
-		"system_info": map[string]string{
+		"systemInfo": map[string]string{
 			"serverTimestamp": time.Now().Format(time.RFC3339),
 		},
 	}
