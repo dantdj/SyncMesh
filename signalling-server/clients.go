@@ -1,20 +1,41 @@
 package main
 
-var clients = []string{}
+import (
+	"crypto/rand"
+	"encoding/hex"
+	"sync"
+)
 
-func RegisterClient(client string) {
-	clients = append(clients, client)
+var (
+	clients = make(map[string]string)
+	mu      sync.Mutex
+)
+
+func RegisterClient(ip string) string {
+	mu.Lock()
+	defer mu.Unlock()
+
+	b := make([]byte, 16)
+	rand.Read(b)
+	id := hex.EncodeToString(b)
+
+	clients[id] = ip
+	return id
 }
 
-func UnregisterClient(client string) {
-	for i, c := range clients {
-		if c == client {
-			clients = append(clients[:i], clients[i+1:]...)
-			break
-		}
-	}
+func UnregisterClient(id string) {
+	mu.Lock()
+	defer mu.Unlock()
+	delete(clients, id)
 }
 
 func DiscoverClients() []string {
-	return clients
+	mu.Lock()
+	defer mu.Unlock()
+
+	list := make([]string, 0, len(clients))
+	for _, ip := range clients {
+		list = append(list, ip)
+	}
+	return list
 }

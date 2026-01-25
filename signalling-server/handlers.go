@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net"
 	"net/http"
 	"time"
 )
@@ -21,9 +22,16 @@ func PingHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) error {
-	RegisterClient(r.URL.Query().Get("client"))
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		// If there is an error (e.g. missing port), use the address as is
+		host = r.RemoteAddr
+	}
+
+	clientId := RegisterClient(host)
 	env := envelope{
-		"status": "success",
+		"status":   "success",
+		"clientId": clientId,
 	}
 
 	if err := writeJSON(w, http.StatusOK, env, nil); err != nil {
@@ -34,7 +42,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 func UnregisterHandler(w http.ResponseWriter, r *http.Request) error {
-	UnregisterClient(r.URL.Query().Get("client"))
+	UnregisterClient(r.URL.Query().Get("clientId"))
 
 	env := envelope{
 		"status": "success",
