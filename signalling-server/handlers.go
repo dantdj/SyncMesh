@@ -1,12 +1,11 @@
 package main
 
 import (
-	"log/slog"
 	"net/http"
 	"time"
 )
 
-func PingHandler(w http.ResponseWriter, r *http.Request) {
+func PingHandler(w http.ResponseWriter, r *http.Request) error {
 	env := envelope{
 		"status": "available",
 		"system_info": map[string]string{
@@ -15,40 +14,48 @@ func PingHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := writeJSON(w, http.StatusOK, env, nil); err != nil {
-		slog.Error("Failed to return service info", slog.String("error", err.Error()))
-		serverErrorResponse(w)
+		return err
 	}
+
+	return nil
 }
 
-func RegisterHandler(w http.ResponseWriter, r *http.Request) {
+func RegisterHandler(w http.ResponseWriter, r *http.Request) error {
+	RegisterClient(r.URL.Query().Get("client"))
 	env := envelope{
 		"status": "success",
 	}
 
 	if err := writeJSON(w, http.StatusOK, env, nil); err != nil {
-		slog.Error("Failed to return service info", slog.String("error", err.Error()))
-		serverErrorResponse(w)
+		return err
 	}
+
+	return nil
 }
 
-func UnregisterHandler(w http.ResponseWriter, r *http.Request) {
+func UnregisterHandler(w http.ResponseWriter, r *http.Request) error {
+	UnregisterClient(r.URL.Query().Get("client"))
+
 	env := envelope{
 		"status": "success",
 	}
 
 	if err := writeJSON(w, http.StatusOK, env, nil); err != nil {
-		slog.Error("Failed to return service info", slog.String("error", err.Error()))
-		serverErrorResponse(w)
+		return err
 	}
+
+	return nil
 }
 
-func DiscoverHandler(w http.ResponseWriter, r *http.Request) {
+func DiscoverHandler(w http.ResponseWriter, r *http.Request) error {
 	env := envelope{
-		"status": "success",
+		"status":  "success",
+		"clients": DiscoverClients(),
 	}
 
 	if err := writeJSON(w, http.StatusOK, env, nil); err != nil {
-		slog.Error("Failed to return service info", slog.String("error", err.Error()))
-		serverErrorResponse(w)
+		return err
 	}
+
+	return nil
 }
