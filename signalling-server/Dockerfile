@@ -4,7 +4,7 @@ FROM golang:1.25 AS builder
 WORKDIR /app
 
 # Copy dependency files first to leverage Docker layer caching
-COPY go.mod ./
+COPY go.mod go.sum ./
 RUN go mod download
 
 # Copy source code and build
