@@ -17,6 +17,7 @@ func routes() http.Handler {
 	router.HandlerFunc(http.MethodGet, "/discover", handle(DiscoverHandler))
 	router.HandlerFunc(http.MethodPost, "/register", handle(RegisterHandler))
 	router.HandlerFunc(http.MethodPost, "/unregister", handle(UnregisterHandler))
+	router.HandlerFunc(http.MethodPost, "/heartbeat", handle(HeartbeatHandler))
 
 	return recoverPanic(router)
 }
