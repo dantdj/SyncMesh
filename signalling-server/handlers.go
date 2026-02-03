@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log/slog"
 	"net"
 	"net/http"
 	"strconv"
@@ -90,6 +91,8 @@ func HeartbeatHandler(w http.ResponseWriter, r *http.Request) error {
 		errorResponse(w, http.StatusNotFound, "client not found")
 		return nil
 	}
+
+	slog.Info("Heartbeat received", slog.String("clientId", clientId))
 
 	env := envelope{
 		"status": "success",

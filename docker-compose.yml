@@ -1,8 +1,17 @@
 services:
   signalling-server:
     build: ./signalling-server
+    ports:
+      - "8089:8089"
 
-  local-client:
+  local-client-1:
     build: ./local-client
     depends_on:
       - signalling-server
+    command: ["./local-client", "-server", "http://signalling-server:8089", "-listen", "4000"]
+
+  local-client-2:
+    build: ./local-client
+    depends_on:
+      - signalling-server
+    command: ["./local-client", "-server", "http://signalling-server:8089", "-listen", "4001"]
