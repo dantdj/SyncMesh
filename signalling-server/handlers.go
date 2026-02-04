@@ -4,10 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log/slog"
 	"net"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/dantdj/syncmesh/api"
 )
 
 func PingHandler(w http.ResponseWriter, r *http.Request) error {
@@ -26,10 +29,7 @@ func PingHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) error {
-	var req struct {
-		LocalIP   string `json:"localIp"`
-		LocalPort int    `json:"localPort"`
-	}
+	var req api.RegisterRequest
 
 	if r.Body != nil {
 		decoder := json.NewDecoder(r.Body)
@@ -91,6 +91,8 @@ func HeartbeatHandler(w http.ResponseWriter, r *http.Request) error {
 		return nil
 	}
 
+	slog.Info("Heartbeat received", slog.String("clientId", clientId))
+
 	env := envelope{
 		"status": "success",
 	}
@@ -103,18 +105,10 @@ func HeartbeatHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 func DiscoverHandler(w http.ResponseWriter, r *http.Request) error {
-	type clientSnapshot struct {
-		ClientID   string `json:"clientId"`
-		PublicIP   string `json:"publicIp"`
-		PublicPort int    `json:"publicPort"`
-		LocalIP    string `json:"localIp,omitempty"`
-		LocalPort  int    `json:"localPort,omitempty"`
-	}
-
 	clients := DiscoverClients()
-	snapshots := make([]clientSnapshot, 0, len(clients))
+	snapshots := make([]api.ClientSnapshot, 0, len(clients))
 	for id, info := range clients {
-		snapshots = append(snapshots, clientSnapshot{
+		snapshots = append(snapshots, api.ClientSnapshot{
 			ClientID:   id,
 			PublicIP:   info.PublicIP,
 			PublicPort: info.PublicPort,
