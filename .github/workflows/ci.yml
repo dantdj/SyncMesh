@@ -1,0 +1,53 @@
+name: Go CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - signalling-server
+          - local-client
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ matrix.module }}/go.mod
+          cache: true
+          cache-dependency-path: |
+            ${{ matrix.module }}/go.sum
+            api/go.sum
+
+      - name: Build
+        run: go build ./...
+        working-directory: ${{ matrix.module }}
+
+      - name: Test
+        run: go test ./...
+        working-directory: ${{ matrix.module }}
+
+  api-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: api/go.mod
+          cache: true
+
+      - name: Test
+        run: go test ./...
+        working-directory: api
