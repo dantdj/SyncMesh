@@ -1,0 +1,59 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "local-client/v*"
+      - "signalling-server/v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release-local-client:
+    if: startsWith(github.ref_name, 'local-client/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: local-client/go.mod
+          cache: true
+          cache-dependency-path: |
+            local-client/go.sum
+            api/go.sum
+
+      - name: Release
+        uses: goreleaser/goreleaser-action@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          version: latest
+          args: release --config local-client/.goreleaser.yml --clean
+
+  release-signalling-server:
+    if: startsWith(github.ref_name, 'signalling-server/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: signalling-server/go.mod
+          cache: true
+          cache-dependency-path: |
+            signalling-server/go.sum
+            api/go.sum
+
+      - name: Release
+        uses: goreleaser/goreleaser-action@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          version: latest
+          args: release --config signalling-server/.goreleaser.yml --clean
