@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"maps"
 	"sync"
 	"time"
 )
@@ -55,9 +56,7 @@ func DiscoverClients() map[string]clientInfo {
 	pruneExpiredLocked()
 
 	copy := make(map[string]clientInfo, len(clients))
-	for id, info := range clients {
-		copy[id] = info
-	}
+	maps.Copy(copy, clients)
 	return copy
 }
 
