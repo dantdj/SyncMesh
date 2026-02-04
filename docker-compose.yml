@@ -1,17 +1,23 @@
 services:
   signalling-server:
-    build: ./signalling-server
+    build:
+      context: .
+      dockerfile: signalling-server/Dockerfile
     ports:
       - "8089:8089"
 
   local-client-1:
-    build: ./local-client
+    build:
+      context: .
+      dockerfile: local-client/Dockerfile
     depends_on:
       - signalling-server
     command: ["./local-client", "-server", "http://signalling-server:8089", "-listen", "4000"]
 
   local-client-2:
-    build: ./local-client
+    build:
+      context: .
+      dockerfile: local-client/Dockerfile
     depends_on:
       - signalling-server
     command: ["./local-client", "-server", "http://signalling-server:8089", "-listen", "4001"]

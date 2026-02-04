@@ -12,32 +12,9 @@ import (
 	"net/url"
 	"os"
 	"time"
+
+	"github.com/dantdj/syncmesh/api"
 )
-
-type registerRequest struct {
-	LocalIP   string `json:"localIp"`
-	LocalPort int    `json:"localPort"`
-}
-
-type registerResponse struct {
-	Status   string `json:"status"`
-	ClientID string `json:"clientId"`
-	Error    string `json:"error"`
-}
-
-type discoverResponse struct {
-	Status  string           `json:"status"`
-	Clients []clientSnapshot `json:"clients"`
-	Error   string           `json:"error"`
-}
-
-type clientSnapshot struct {
-	ClientID   string `json:"clientId"`
-	PublicIP   string `json:"publicIp"`
-	PublicPort int    `json:"publicPort"`
-	LocalIP    string `json:"localIp"`
-	LocalPort  int    `json:"localPort"`
-}
 
 func main() {
 	serverURL := flag.String("server", "http://localhost:8089", "signalling server base URL")
@@ -107,7 +84,7 @@ func handleConn(logger *log.Logger, conn net.Conn) {
 }
 
 func register(logger *log.Logger, baseURL, localIP string, localPort int) (string, error) {
-	body, err := json.Marshal(registerRequest{
+	body, err := json.Marshal(api.RegisterRequest{
 		LocalIP:   localIP,
 		LocalPort: localPort,
 	})
@@ -132,7 +109,7 @@ func register(logger *log.Logger, baseURL, localIP string, localPort int) (strin
 		return "", fmt.Errorf("register failed: status %s", resp.Status)
 	}
 
-	var payload registerResponse
+	var payload api.RegisterResponse
 	if err := json.NewDecoder(resp.Body).Decode(&payload); err != nil {
 		return "", err
 	}
@@ -161,7 +138,7 @@ func connectToPeer(logger *log.Logger, baseURL, selfID string) error {
 		return fmt.Errorf("discover failed: status %s", resp.Status)
 	}
 
-	var payload discoverResponse
+	var payload api.DiscoverResponse
 	if err := json.NewDecoder(resp.Body).Decode(&payload); err != nil {
 		return err
 	}
@@ -231,7 +208,7 @@ func sendHeartbeat(baseURL, clientID string) error {
 	return nil
 }
 
-func pickPeerAddress(peer clientSnapshot) string {
+func pickPeerAddress(peer api.ClientSnapshot) string {
 	if peer.LocalIP != "" && peer.LocalPort != 0 {
 		return fmt.Sprintf("%s:%d", peer.LocalIP, peer.LocalPort)
 	}
